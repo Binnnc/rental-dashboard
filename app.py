@@ -4,6 +4,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="房源数据分析", layout="wide")
 
@@ -57,7 +58,25 @@ with left:
 
 with right:
     st.subheader("租金分布")
-    st.line_chart(filtered_df["租金"].value_counts().sort_index())
+    # 方法2：用 matplotlib 做直方图（分箱）
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots()
+    ax.hist(filtered_df["租金"], bins=15, edgecolor='black', color='skyblue')
+    ax.set_xlabel("租金 ($)")
+    ax.set_ylabel("房源数量")
+    ax.set_title("租金分布直方图")
+    st.pyplot(fig)
+
+# 饼图：各区域房源占比
+st.subheader("🏠 各区域房源占比")
+# 统计每个区域的房源数量
+area_counts = filtered_df["区域"].value_counts()
+
+fig2, ax2 = plt.subplots()
+ax2.pie(area_counts, labels=area_counts.index, autopct='%1.1f%%', startangle=90)
+ax2.axis('equal')  # 保证饼图是圆的
+st.pyplot(fig2)
 
 # 数据表格
 st.subheader("📋 房源明细")
