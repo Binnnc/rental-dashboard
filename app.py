@@ -56,9 +56,12 @@ with col1:
 
 with col2:
     st.subheader("Rent Distribution")
-    # 用 Streamlit 的 area_chart 模拟分布（或者用 line_chart）
-    rent_counts = filtered_df["租金"].value_counts().sort_index()
-    st.line_chart(rent_counts, height=400)
+    # 手动分箱模拟直方图
+    bins = [1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000]
+    labels = ['1500-2000', '2000-2500', '2500-3000', '3000-3500', '3500-4000', '4000-4500', '4500-5000']
+    filtered_df['租金区间'] = pd.cut(filtered_df['租金'], bins=bins, labels=labels, right=False)
+    hist_data = filtered_df['租金区间'].value_counts().sort_index()
+    st.bar_chart(hist_data, height=400)
 
 with col3:
     st.subheader("Property Share by Area")
