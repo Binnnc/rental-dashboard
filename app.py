@@ -1,16 +1,14 @@
 # 文件名：app.py
-# 运行方式：在终端执行 streamlit run app.py
-
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+import plotly.express as px
 
-st.set_page_config(page_title="房源数据分析", layout="wide")
+st.set_page_config(page_title="Meiwo Realty Dashboard", layout="wide")
 
-st.title("🏠 美窝房产 · 房源数据分析看板")
+st.title("🏠 Meiwo Realty · Rental Data Analytics Dashboard")
 
-# 加载数据（后面换成你的真实 Excel）
+# 加载模拟数据
 @st.cache_data
 def load_data():
     np.random.seed(42)
@@ -27,12 +25,12 @@ def load_data():
 df = load_data()
 
 # 侧边栏筛选
-st.sidebar.header("🔍 筛选条件")
+st.sidebar.header("🔍 Filter")
 selected_areas = st.sidebar.multiselect(
-    "选择区域", df["区域"].unique(), default=df["区域"].unique()
+    "Select Area", df["区域"].unique(), default=df["区域"].unique()
 )
 min_price, max_price = st.sidebar.slider(
-    "租金范围", int(df["租金"].min()), int(df["租金"].max()), (2000, 4000)
+    "Rent Range", int(df["租金"].min()), int(df["租金"].max()), (2000, 4000)
 )
 
 # 筛选数据
@@ -44,44 +42,43 @@ filtered_df = df[
 
 # KPI 卡片
 col1, col2, col3, col4 = st.columns(4)
-col1.metric("🏘️ 房源总数", len(filtered_df))
-col2.metric("💰 平均租金", f"${filtered_df['租金'].mean():,.0f}")
-col3.metric("📐 平均面积", f"{filtered_df['面积'].mean():,.0f} sqft")
-col4.metric("🔑 已租比例", f"{(filtered_df['状态'] == '已租').mean() * 100:.1f}%")
+col1.metric("🏘️ Total Properties", len(filtered_df))
+col2.metric("💰 Average Rent", f"${filtered_df['租金'].mean():,.0f}")
+col3.metric("📐 Average Area", f"{filtered_df['面积'].mean():,.0f} sqft")
+col4.metric("🔑 Leased Rate", f"{(filtered_df['状态'] == '已租').mean() * 100:.1f}%")
 
-# 图表
-left, right = st.columns(2)
+# 三个图表并排（全部用 plotly，都有交互性）
+col1, col2, col3 = st.columns(3)
 
-with left:
-    st.subheader("各区域平均租金对比")
-    st.bar_chart(filtered_df.groupby("区域")["租金"].mean())
+with col1:
+    st.subheader("Average Rent by Area")
+    # 柱状图（交互式）
+    avg_rent = filtered_df.groupby("区域")["租金"].mean().reset_index()
+    fig1 = px.bar(avg_rent, x="区域", y="租金", title="Average Rent by Area")
+    fig1.update_layout(height=400)
+    st.plotly_chart(fig1, use_container_width=True)
 
-with right:
-    st.subheader("租金分布")
-    # 方法2：用 matplotlib 做直方图（分箱）
-    import matplotlib.pyplot as plt
+with col2:
+    st.subheader("Rent Distribution")
+    # 直方图（交互式）
+    fig2 = px.histogram(filtered_df, x="租金", nbins=15, title="Rent Distribution",
+                        labels={"租金": "Rent ($)", "count": "Number of Properties"})
+    fig2.update_layout(height=400)
+    st.plotly_chart(fig2, use_container_width=True)
 
-    fig, ax = plt.subplots()
-    ax.hist(filtered_df["租金"], bins=15, edgecolor='black', color='skyblue')
-    ax.set_xlabel("租金 ($)")
-    ax.set_ylabel("房源数量")
-    ax.set_title("租金分布直方图")
-    st.pyplot(fig)
-
-# 饼图：各区域房源占比
-st.subheader("🏠 各区域房源占比")
-# 统计每个区域的房源数量
-area_counts = filtered_df["区域"].value_counts()
-
-fig2, ax2 = plt.subplots()
-ax2.pie(area_counts, labels=area_counts.index, autopct='%1.1f%%', startangle=90)
-ax2.axis('equal')  # 保证饼图是圆的
-st.pyplot(fig2)
+with col3:
+    st.subheader("Property Share by Area")
+    # 饼图（交互式）
+    area_counts = filtered_df["区域"].value_counts().reset_index()
+    area_counts.columns = ["区域", "count"]
+    fig3 = px.pie(area_counts, values="count", names="区域", title="Property Share by Area")
+    fig3.update_layout(height=400)
+    st.plotly_chart(fig3, use_container_width=True)
 
 # 数据表格
-st.subheader("📋 房源明细")
+st.subheader("📋 Property Details")
 st.dataframe(filtered_df, use_container_width=True)
 
 # 下载按钮
-csv = filtered_df.to_csv(index=True)
-st.download_button("⬇️ 下载筛选后的数据", csv, "filtered_rentals.csv", "text/csv")
+csv = filtered_df.to_csv(index=False)
+st.download_button("⬇️ Download Filtered Data", csv, "rental_data.csv", "text/csv")
