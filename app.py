@@ -47,33 +47,27 @@ col2.metric("💰 Average Rent", f"${filtered_df['租金'].mean():,.0f}")
 col3.metric("📐 Average Area", f"{filtered_df['面积'].mean():,.0f} sqft")
 col4.metric("🔑 Leased Rate", f"{(filtered_df['状态'] == '已租').mean() * 100:.1f}%")
 
-# 三个图表并排（全部用 plotly，都有交互性）
+# 三个图表并排
 col1, col2, col3 = st.columns(3)
 
 with col1:
     st.subheader("Average Rent by Area")
-    # 柱状图（交互式）
-    avg_rent = filtered_df.groupby("区域")["租金"].mean().reset_index()
-    fig1 = px.bar(avg_rent, x="区域", y="租金", title="Average Rent by Area")
-    fig1.update_layout(height=400)
-    st.plotly_chart(fig1, use_container_width=True)
+    st.bar_chart(filtered_df.groupby("区域")["租金"].mean(), height=400)
 
 with col2:
     st.subheader("Rent Distribution")
-    # 直方图（交互式）
-    fig2 = px.histogram(filtered_df, x="租金", nbins=15, title="Rent Distribution",
-                        labels={"租金": "Rent ($)", "count": "Number of Properties"})
-    fig2.update_layout(height=400)
-    st.plotly_chart(fig2, use_container_width=True)
+    # 用 Streamlit 的 area_chart 模拟分布（或者用 line_chart）
+    rent_counts = filtered_df["租金"].value_counts().sort_index()
+    st.line_chart(rent_counts, height=400)
 
 with col3:
     st.subheader("Property Share by Area")
-    # 饼图（交互式）
+    # 饼图只能用 plotly，但统一高度
     area_counts = filtered_df["区域"].value_counts().reset_index()
     area_counts.columns = ["区域", "count"]
-    fig3 = px.pie(area_counts, values="count", names="区域", title="Property Share by Area")
-    fig3.update_layout(height=400)
-    st.plotly_chart(fig3, use_container_width=True)
+    fig = px.pie(area_counts, values="count", names="区域", title="")
+    fig.update_layout(height=400, margin=dict(t=0, b=0, l=0, r=0))
+    st.plotly_chart(fig, use_container_width=True)
 
 # 数据表格
 st.subheader("📋 Property Details")
