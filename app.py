@@ -31,7 +31,7 @@ st.sidebar.header("🔍 筛选条件")
 # 区域筛选（如果有区域列的话，目前没有，可以后续补充）
 # 学校筛选
 schools = ["全部"] + sorted(df["学校"].dropna().unique().tolist())
-selected_school = st.sidebar.selectbox("🎓 客户学校", schools)
+selected_school = st.sidebar.selectbox("🎓 客户身份", schools)
 
 # 来源筛选
 sources = ["全部"] + sorted(df["来源"].dropna().unique().tolist())
@@ -55,13 +55,13 @@ col1, col2, col3, col4 = st.columns(4)
 col1.metric("🏘️ 总成交单数", len(filtered_df))
 col2.metric("💰 Source", f"${filtered_df['价格1'].mean():,.0f}")
 col3.metric("💰 B&B", f"${filtered_df['价格2'].mean():,.0f}")
-col4.metric("🎓 覆盖学校数", filtered_df["学校"].nunique())
+col4.metric("🎓 身份数量", filtered_df["学校"].nunique())
 
 # 图表1：各学校成交数量（Top 10）
-st.subheader("🎓 各学校成交数量（Top 10）")
+st.subheader("🎓 各身份成交数量（Top 10）")
 school_counts = filtered_df["学校"].value_counts().head(10).reset_index()
 school_counts.columns = ["学校", "数量"]
-fig1 = px.bar(school_counts, x="学校", y="数量", text="数量", color="数量")
+fig1 = px.bar(school_counts, x="身份", y="数量", text="数量", color="数量")
 fig1.update_traces(textposition='outside')
 fig1.update_layout(height=450)
 st.plotly_chart(fig1, use_container_width=True)
