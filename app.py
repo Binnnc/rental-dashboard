@@ -60,7 +60,7 @@ col4.metric("🎓 身份数量", filtered_df["学校"].nunique())
 # 图表1：各学校成交数量（Top 10）
 st.subheader("🎓 各身份成交数量（Top 10）")
 school_counts = filtered_df["学校"].value_counts().head(10).reset_index()
-school_counts.columns = ["身份", "数量"]
+school_counts.columns = ["学校", "数量"]
 fig1 = px.bar(school_counts, x="学校", y="数量", text="数量", color="数量")
 fig1.update_traces(textposition='outside')
 fig1.update_layout(height=450)
